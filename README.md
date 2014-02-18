@@ -1,3 +1,38 @@
+# 支持七牛云存储的 Ghost
+
+Ghost 目前仅支持将上传的文件（主要是图片）存储在 `content/images` 目录下面。此项目的目的是增加对七牛云存储的支持，也就是将上传到 Ghost 的图片存储到七牛云服务器上，本地服务器不保存。这样既能减轻自己服务器的压力，还能通过 CDN 加速图片载入。
+
+## 增加的文件
+
+主要是在 `core/server/storage` 目录增加 `qiniu.js` 文件（继承 `baseStore` 基类实现各个方法）。
+
+## 修改的文件
+
+- 修改了 `core/server/storage/index.js` 文件以支持加载 `qiniu.js` 存储类。
+- 修改了 `package.json` 文件，增加了对 `qiniu` npm包的依赖
+
+
+## 配置
+
+案例如下：
+
+```
+qiniu: {
+            bucketname: 'my-first-bucket', //空间名称
+            ACCESS_KEY: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', //具体含义请参考七牛的文档
+			SECRET_KEY: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+            root: '/images/', //文件存储在哪个目录。可以设置为 `/` 表示存储在根目录
+            prefix: 'http://cdn.my-domainname.com'  //上传的文件的 URL 前缀，可以是你自己绑定的二级域名或者七牛云默认分配的二级域名。文件最中的 URL 为：prefix + root + md5(file) + extension
+            例如：http://cdn.my-domainname.com/images/a/ab/dqwerqwetetqwedfasdf.png
+        }
+```
+
+## 上传文件在七牛云上的存储结构
+
+首先计算上传文件的 md5 值，然后取 md5 值的第1位字符作为一级目录名称，取第2和3位作为二级目录名称，剩余的字符作为文件名。例如：
+
+某上传文件的 md5 值为：6fb2a38dc107eacb41cf1656e899cf70；扩展名为 .jpg ；目录及文件组织结构为：6/fb/2a38dc107eacb41cf1656e899cf70.jpg
+
 # [Ghost](https://github.com/TryGhost/Ghost) [![Build Status](https://travis-ci.org/TryGhost/Ghost.png?branch=master)](https://travis-ci.org/TryGhost/Ghost)
 
 Ghost is a free, open, simple blogging platform that's available to anyone who wants to use it. Lovingly created and maintained by [John O'Nolan](http://twitter.com/JohnONolan) + [Hannah Wolfe](http://twitter.com/ErisDS) + an amazing group of [contributors](https://github.com/TryGhost/Ghost/contributors).
